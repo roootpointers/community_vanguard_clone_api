@@ -1,0 +1,335 @@
+{
+  "info": {
+    "name": "Exchange Quote Request API",
+    "description": "API collection for requesting and managing quotes from exchanges",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "exchange-api"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "exchange_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "quote_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Submit Quote Request",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"exchange\": \"{{exchange_uuid}}\",\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"description\": \"I need custom veteran-themed merchandise for an upcoming event. Looking for t-shirts, hats, and promotional materials with our organization's logo. We need approximately 100 pieces.\",\n  \"budget_ranges\": [\n    {\n      \"range\": \"$100 - $300\",\n      \"selected\": false\n    },\n    {\n      \"range\": \"$300 - $500\",\n      \"selected\": true\n    },\n    {\n      \"range\": \"$1000 - $2000\",\n      \"selected\": true\n    },\n    {\n      \"range\": \"$1000+\",\n      \"selected\": false\n    }\n  ],\n  \"uploaded_files\": [\n    \"https://example.com/logo.png\",\n    \"https://example.com/design-requirements.pdf\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", ""]
+        },
+        "description": "Submit a new quote request to an exchange. Returns custom success response format."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/quotes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "quotes", ""]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Quote Request Submitted Successfully\",\n  \"data\": {\n    \"uuid\": \"123e4567-e89b-12d3-a456-426614174000\",\n    \"exchange\": \"exchange-uuid\",\n    \"user\": \"user-uuid\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"description\": \"I need custom veteran-themed merchandise...\",\n    \"budget_ranges\": [...],\n    \"uploaded_files\": [...],\n    \"status\": \"pending\",\n    \"response_message\": null,\n    \"quoted_amount\": null,\n    \"created_at\": \"2025-12-03T10:30:00Z\",\n    \"updated_at\": \"2025-12-03T10:30:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "2. List All Quote Requests",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", ""],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending",
+              "disabled": true,
+              "description": "Filter by status: pending, reviewed, quoted, rejected"
+            },
+            {
+              "key": "exchange",
+              "value": "{{exchange_uuid}}",
+              "disabled": true,
+              "description": "Filter by exchange UUID"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "disabled": true,
+              "description": "Page number"
+            }
+          ]
+        },
+        "description": "Retrieve all quote requests. Users see their own quotes, exchange owners see quotes for their exchanges."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Specific Quote Request",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "{{quote_uuid}}", ""]
+        },
+        "description": "Retrieve details of a specific quote request."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Quote Request",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Updated requirements - now also need banners and promotional materials for the event.\",\n  \"budget_ranges\": [\n    {\n      \"range\": \"$1000 - $2000\",\n      \"selected\": true\n    },\n    {\n      \"range\": \"$1000+\",\n      \"selected\": false\n    }\n  ],\n  \"uploaded_files\": [\n    \"https://example.com/updated-logo.png\",\n    \"https://example.com/new-requirements.pdf\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "{{quote_uuid}}", ""]
+        },
+        "description": "Update quote request details. Only the requester can update."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Delete Quote Request",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "{{quote_uuid}}", ""]
+        },
+        "description": "Delete/cancel a quote request. Only the requester can delete."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get My Quote Requests",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/my-quotes/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "my-quotes", ""]
+        },
+        "description": "Retrieve all quote requests submitted by the current user."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Exchange Quote Requests (Owner)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/exchange-quotes/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "exchange-quotes", ""]
+        },
+        "description": "Retrieve all quote requests for exchanges owned by the current user. For exchange owners only."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Respond to Quote Request",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response_message\": \"Thank you for your inquiry! We can provide all the items you mentioned. Our team has extensive experience with veteran-themed merchandise and can work within your budget. We specialize in custom designs and high-quality materials.\",\n  \"quoted_amount\": 450.00,\n  \"status\": \"quoted\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/respond_to_quote/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "{{quote_uuid}}", "respond_to_quote", ""]
+        },
+        "description": "Exchange owner responds to a quote request with message and quoted amount."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/respond_to_quote/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "quotes", "{{quote_uuid}}", "respond_to_quote", ""]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Quote Response Submitted Successfully\",\n  \"data\": {\n    \"uuid\": \"quote-uuid\",\n    \"exchange\": \"exchange-uuid\",\n    \"user\": \"user-uuid\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"description\": \"I need custom merchandise...\",\n    \"budget_ranges\": [...],\n    \"uploaded_files\": [...],\n    \"status\": \"quoted\",\n    \"response_message\": \"Thank you for your inquiry!...\",\n    \"quoted_amount\": \"450.00\",\n    \"created_at\": \"2025-12-03T10:30:00Z\",\n    \"updated_at\": \"2025-12-03T16:00:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "9. Update Quote Status",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"reviewed\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/update_status/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", "{{quote_uuid}}", "update_status", ""]
+        },
+        "description": "Update quote status. Valid values: pending, reviewed, quoted, rejected. Exchange owners only."
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/update_status/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "quotes", "{{quote_uuid}}", "update_status", ""]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Quote Status Updated Successfully\",\n  \"data\": {...}\n}"
+        }
+      ]
+    },
+    {
+      "name": "Filter by Status - Pending",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?status=pending",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", ""],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending"
+            }
+          ]
+        },
+        "description": "Filter quote requests by pending status."
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Status - Quoted",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?status=quoted",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", ""],
+          "query": [
+            {
+              "key": "status",
+              "value": "quoted"
+            }
+          ]
+        },
+        "description": "Filter quote requests by quoted status."
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Exchange",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?exchange={{exchange_uuid}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "quotes", ""],
+          "query": [
+            {
+              "key": "exchange",
+              "value": "{{exchange_uuid}}"
+            }
+          ]
+        },
+        "description": "Filter quote requests by specific exchange."
+      },
+      "response": []
+    }
+  ]
+}

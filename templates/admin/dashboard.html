@@ -1,0 +1,690 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    * { box-sizing: border-box; }
+    
+    body {
+        font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    
+    .dashboard-wrapper {
+        padding: 25px;
+        max-width: 100%;
+        overflow-x: hidden;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
+        min-height: 100vh;
+    }
+    
+    .dashboard-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 35px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .dashboard-header h1 {
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.4em;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+    
+    .dashboard-header p {
+        margin: 10px 0 0 0;
+        color: #6c757d;
+        font-size: 1.1em;
+        font-weight: 500;
+    }
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+        margin-bottom: 35px;
+    }
+    
+    .stat-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 28px;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .stat-card.success::before { background: linear-gradient(90deg, #11998e 0%, #38ef7d 100%); }
+    .stat-card.warning::before { background: linear-gradient(90deg, #f093fb 0%, #f5576c 100%); }
+    .stat-card.info::before { background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-card.danger::before { background: linear-gradient(90deg, #fa709a 0%, #fee140 100%); }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8em;
+        margin-bottom: 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .stat-card.success .stat-icon {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        box-shadow: 0 8px 20px rgba(56, 239, 125, 0.4);
+    }
+    
+    .stat-card.warning .stat-icon {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+    }
+    
+    .stat-card.info .stat-icon {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+    }
+    
+    .stat-card.danger .stat-icon {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        box-shadow: 0 8px 20px rgba(250, 112, 154, 0.4);
+    }
+    
+    .stat-label {
+        color: #95a5a6;
+        font-size: 0.75em;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 2.8em;
+        font-weight: 900;
+        color: #2c3e50;
+        margin: 12px 0;
+        line-height: 1;
+    }
+    
+    .stat-change {
+        font-size: 0.95em;
+        color: #27ae60;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .stat-change::before {
+        content: '↗';
+        font-size: 1.3em;
+        font-weight: 700;
+    }
+    
+    .charts-section {
+        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        margin-bottom: 25px;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .section-title {
+        font-size: 1.8em;
+        font-weight: 800;
+        color: #2c3e50;
+        margin-bottom: 30px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .section-title::before {
+        content: '';
+        width: 5px;
+        height: 40px;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        border-radius: 3px;
+        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+    }
+    
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+    
+    .chart-container {
+        background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+        padding: 30px;
+        border-radius: 18px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        border: 1px solid rgba(255,255,255,0.5);
+        transition: all 0.3s ease;
+        min-height: 380px;
+    }
+    
+    .chart-container:hover {
+        box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+        transform: translateY(-4px);
+    }
+    
+    .chart-title {
+        font-size: 1.3em;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid transparent;
+        border-image: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        border-image-slice: 1;
+    }
+    
+    canvas {
+        max-height: 300px !important;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 1400px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .charts-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 1200px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .charts-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .stat-value {
+            font-size: 2.3em;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-wrapper {
+            padding: 15px;
+        }
+        .dashboard-header {
+            padding: 25px;
+        }
+        .dashboard-header h1 {
+            font-size: 1.8em;
+        }
+        .dashboard-stats {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        .stat-card {
+            padding: 20px;
+            min-height: 160px;
+        }
+        .stat-value {
+            font-size: 2em;
+        }
+        .charts-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        .charts-section {
+            padding: 25px;
+        }
+        .chart-container {
+            padding: 20px;
+            min-height: 320px;
+        }
+        canvas {
+            max-height: 250px !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .dashboard-header h1 {
+            font-size: 1.5em;
+        }
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        .stat-card {
+            padding: 18px;
+            min-height: 140px;
+        }
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5em;
+        }
+        .stat-value {
+            font-size: 1.8em;
+        }
+        .section-title {
+            font-size: 1.4em;
+        }
+        .chart-container {
+            padding: 18px;
+            min-height: 300px;
+        }
+        .chart-title {
+            font-size: 1em;
+        }
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.2em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1>📊 Vanguard Analytics Dashboard</h1>
+        <p>Real-time insights and statistics for your platform</p>
+    </div>
+    
+    <!-- Key Statistics Cards -->
+    <div class="dashboard-stats">
+        <div class="stat-card info">
+            <div class="stat-icon">👥</div>
+            <div class="stat-label">Total Users</div>
+            <div class="stat-value">{{ total_users }}</div>
+            <div class="stat-change">+{{ new_users_30_days }} in last 30 days</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">✅</div>
+            <div class="stat-label">Active Users</div>
+            <div class="stat-value">{{ active_users }}</div>
+            <div class="stat-change">{{ active_percentage }}% of total</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">📝</div>
+            <div class="stat-label">Profile Completion</div>
+            <div class="stat-value">{{ profiles_completed }}</div>
+            <div class="stat-change">{{ profile_completion_percentage }}% completed</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">🎭</div>
+            <div class="stat-label">Role Assignment</div>
+            <div class="stat-value">{{ roles_completed }}</div>
+            <div class="stat-change">{{ role_completion_percentage }}% assigned</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-icon">💡</div>
+            <div class="stat-label">Intel Reports</div>
+            <div class="stat-value">{{ total_intel }}</div>
+            <div class="stat-change">{{ approved_intel }} approved</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-icon">🏪</div>
+            <div class="stat-label">Exchanges</div>
+            <div class="stat-value">{{ total_exchanges }}</div>
+            <div class="stat-change">{{ approved_exchanges }} approved</div>
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-icon">🤝</div>
+            <div class="stat-label">Network Connections</div>
+            <div class="stat-value">{{ total_follows }}</div>
+            <div class="stat-change">Total follows</div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-icon">🔔</div>
+            <div class="stat-label">Notifications</div>
+            <div class="stat-value">{{ total_notifications }}</div>
+            <div class="stat-change">{{ unread_notifications }} unread</div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="charts-section">
+        <h2 class="section-title">📈 Data Visualizations</h2>
+        
+        <div class="charts-grid">
+            <!-- User Growth Chart -->
+            <div class="chart-container">
+                <div class="chart-title">📈 User Growth (Last 7 Days)</div>
+                <canvas id="userGrowthChart"></canvas>
+            </div>
+            
+            <!-- Gender Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">👥 Gender Distribution</div>
+                <canvas id="genderChart"></canvas>
+            </div>
+            
+            <!-- Account Type Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">📱 Account Types</div>
+                <canvas id="accountTypeChart"></canvas>
+            </div>
+            
+            <!-- Role Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">🎭 User Roles</div>
+                <canvas id="roleChart"></canvas>
+            </div>
+            
+            <!-- Military Branch Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">🎖️ Military Branch Distribution</div>
+                <canvas id="branchChart"></canvas>
+            </div>
+            
+            <!-- Education Level Distribution -->
+            <div class="chart-container">
+                <div class="chart-title">🎓 Education Levels</div>
+                <canvas id="educationChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart.js default config
+Chart.defaults.color = '#7f8c8d';
+Chart.defaults.font.family = "'Inter', 'Segoe UI', Arial, sans-serif";
+Chart.defaults.font.size = 13;
+
+// Color palette
+const colors = {
+    primary: '#667eea',
+    success: '#38ef7d',
+    warning: '#f5576c',
+    info: '#00f2fe',
+    danger: '#fee140',
+    purple: '#764ba2',
+    teal: '#11998e',
+    pink: '#f093fb'
+};
+
+const gradientColors = [
+    'rgba(102, 126, 234, 0.8)',
+    'rgba(56, 239, 125, 0.8)',
+    'rgba(245, 87, 108, 0.8)',
+    'rgba(0, 242, 254, 0.8)',
+    'rgba(254, 225, 64, 0.8)',
+    'rgba(118, 75, 162, 0.8)'
+];
+
+// User Growth Chart
+const userGrowthCtx = document.getElementById('userGrowthChart').getContext('2d');
+const userGrowthGradient = userGrowthCtx.createLinearGradient(0, 0, 0, 300);
+userGrowthGradient.addColorStop(0, 'rgba(102, 126, 234, 0.4)');
+userGrowthGradient.addColorStop(1, 'rgba(102, 126, 234, 0.05)');
+
+new Chart(userGrowthCtx, {
+    type: 'line',
+    data: {
+        labels: {{ user_growth|safe|default:"[]" }}.map(d => d.date),
+        datasets: [{
+            label: 'New Users',
+            data: {{ user_growth|safe|default:"[]" }}.map(d => d.count),
+            borderColor: colors.primary,
+            backgroundColor: userGrowthGradient,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: 'white',
+            pointBorderColor: colors.primary,
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 13 }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// Gender Distribution Chart
+const genderCtx = document.getElementById('genderChart').getContext('2d');
+new Chart(genderCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ gender_stats|safe|default:"[]" }}.map(d => d.gender || 'Not Specified'),
+        datasets: [{
+            data: {{ gender_stats|safe|default:"[]" }}.map(d => d.count),
+            backgroundColor: gradientColors,
+            borderWidth: 0,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8
+            }
+        }
+    }
+});
+
+// Account Type Chart
+const accountTypeCtx = document.getElementById('accountTypeChart').getContext('2d');
+new Chart(accountTypeCtx, {
+    type: 'pie',
+    data: {
+        labels: {{ account_type_stats|safe|default:"[]" }}.map(d => d.account_type || 'Not Set'),
+        datasets: [{
+            data: {{ account_type_stats|safe|default:"[]" }}.map(d => d.count),
+            backgroundColor: gradientColors.slice(0, 4),
+            borderWidth: 0,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8
+            }
+        }
+    }
+});
+
+// Role Distribution Chart
+const roleCtx = document.getElementById('roleChart').getContext('2d');
+new Chart(roleCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ role_stats|safe|default:"[]" }}.map(d => d.role || 'No Role'),
+        datasets: [{
+            label: 'Users',
+            data: {{ role_stats|safe|default:"[]" }}.map(d => d.count),
+            backgroundColor: colors.primary,
+            borderRadius: 8,
+            hoverBackgroundColor: colors.purple
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            x: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// Branch Distribution Chart
+const branchCtx = document.getElementById('branchChart').getContext('2d');
+new Chart(branchCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ branch_stats|safe|default:"[]" }}.map(d => d.branch),
+        datasets: [{
+            label: 'Members',
+            data: {{ branch_stats|safe|default:"[]" }}.map(d => d.count),
+            backgroundColor: gradientColors,
+            borderRadius: 8,
+            hoverBackgroundColor: colors.purple
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        indexAxis: 'y',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            y: {
+                grid: { display: false }
+            }
+        }
+    }
+});
+
+// Education Level Chart
+const educationCtx = document.getElementById('educationChart').getContext('2d');
+new Chart(educationCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ education_stats|safe|default:"[]" }}.map(d => d.education),
+        datasets: [{
+            data: {{ education_stats|safe|default:"[]" }}.map(d => d.count),
+            backgroundColor: gradientColors,
+            borderWidth: 0,
+            hoverOffset: 15
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    font: { size: 12 },
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                cornerRadius: 8
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

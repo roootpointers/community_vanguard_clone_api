@@ -1,0 +1,415 @@
+{
+  "info": {
+    "_postman_id": "47c2b3ae-3466-47f8-a8b8-d92861f5b555",
+    "name": "Exchange Quote Request API",
+    "description": "API collection for requesting and managing quotes from exchanges",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "2. List All Quote Requests",
+      "id": "868fdcfb-0538-490c-be02-95b06f374fc1",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}api/quotes/?exchange={{exchange_uuid}}",
+          "host": [
+            "{{base_url}}api"
+          ],
+          "path": [
+            "quotes",
+            ""
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending",
+              "description": "Filter by status: pending, reviewed, quoted, rejected",
+              "disabled": true
+            },
+            {
+              "key": "exchange",
+              "value": "{{exchange_uuid}}",
+              "description": "Filter by exchange UUID"
+            },
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number",
+              "disabled": true
+            }
+          ]
+        },
+        "description": "Retrieve all quote requests. Users see their own quotes, exchange owners see quotes for their exchanges."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Specific Quote Request",
+      "id": "adeaa1ff-7779-443c-a8d4-d227bcb0ab99",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "{{quote_uuid}}",
+            ""
+          ]
+        },
+        "description": "Retrieve details of a specific quote request."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Update Quote Request",
+      "id": "e420ac35-fac3-4c8a-8db4-43075eec0504",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"description\": \"Updated requirements - now also need banners and promotional materials for the event.\",\n  \"budget_ranges\": [\n    {\n      \"range\": \"$1000 - $2000\",\n      \"selected\": true\n    },\n    {\n      \"range\": \"$1000+\",\n      \"selected\": false\n    }\n  ],\n  \"uploaded_files\": [\n    \"https://example.com/updated-logo.png\",\n    \"https://example.com/new-requirements.pdf\"\n  ]\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "{{quote_uuid}}",
+            ""
+          ]
+        },
+        "description": "Update quote request details. Only the requester can update."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Delete Quote Request",
+      "id": "32b673f5-7773-43bb-8330-8d6be9f2088e",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "{{quote_uuid}}",
+            ""
+          ]
+        },
+        "description": "Delete/cancel a quote request. Only the requester can delete."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get My Quote Requests",
+      "id": "63937bf1-27e8-4213-ad25-920c77c4814a",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/my-quotes/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "my-quotes",
+            ""
+          ]
+        },
+        "description": "Retrieve all quote requests submitted by the current user."
+      },
+      "response": []
+    },
+    {
+      "name": "7. Get Exchange Quote Requests (Owner)",
+      "id": "9de83cae-0dee-4146-bfb8-83dd3eaa0a67",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/exchange-quotes/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "exchange-quotes",
+            ""
+          ]
+        },
+        "description": "Retrieve all quote requests for exchanges owned by the current user. For exchange owners only."
+      },
+      "response": []
+    },
+    {
+      "name": "8. Respond to Quote Request",
+      "id": "3852ab3e-40b5-4cd1-9f9c-ab8345eb1337",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"response_message\": \"Thank you for your inquiry! We can provide all the items you mentioned. Our team has extensive experience with veteran-themed merchandise and can work within your budget. We specialize in custom designs and high-quality materials.\",\n  \"quoted_amount\": 450.00,\n  \"status\": \"quoted\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/respond_to_quote/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "{{quote_uuid}}",
+            "respond_to_quote",
+            ""
+          ]
+        },
+        "description": "Exchange owner responds to a quote request with message and quoted amount."
+      },
+      "response": [
+        {
+          "id": "0beaee80-c9f3-4950-b4c4-a9d320a04ff2",
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/respond_to_quote/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "quotes",
+                "{{quote_uuid}}",
+                "respond_to_quote",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Quote Response Submitted Successfully\",\n  \"data\": {\n    \"uuid\": \"quote-uuid\",\n    \"exchange\": \"exchange-uuid\",\n    \"user\": \"user-uuid\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"description\": \"I need custom merchandise...\",\n    \"budget_ranges\": [...],\n    \"uploaded_files\": [...],\n    \"status\": \"quoted\",\n    \"response_message\": \"Thank you for your inquiry!...\",\n    \"quoted_amount\": \"450.00\",\n    \"created_at\": \"2025-12-03T10:30:00Z\",\n    \"updated_at\": \"2025-12-03T16:00:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "9. Update Quote Status",
+      "id": "fa3a7663-216b-4e51-82f0-a589fbd20058",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"reviewed\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/update_status/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            "{{quote_uuid}}",
+            "update_status",
+            ""
+          ]
+        },
+        "description": "Update quote status. Valid values: pending, reviewed, quoted, rejected. Exchange owners only."
+      },
+      "response": [
+        {
+          "id": "fb4d0db7-b9e3-44c9-a0c5-16167f5fc4c7",
+          "name": "Success Response",
+          "originalRequest": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/quotes/{{quote_uuid}}/update_status/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "quotes",
+                "{{quote_uuid}}",
+                "update_status",
+                ""
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Quote Status Updated Successfully\",\n  \"data\": {...}\n}"
+        }
+      ]
+    },
+    {
+      "name": "Filter by Status - Pending",
+      "id": "4b38711c-bb4d-4a83-9154-4aa02be0cae0",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?status=pending",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            ""
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "pending"
+            }
+          ]
+        },
+        "description": "Filter quote requests by pending status."
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Status - Quoted",
+      "id": "c1ca59b1-6fb2-46dd-a9a9-99f3974b4941",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?status=quoted",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            ""
+          ],
+          "query": [
+            {
+              "key": "status",
+              "value": "quoted"
+            }
+          ]
+        },
+        "description": "Filter quote requests by quoted status."
+      },
+      "response": []
+    },
+    {
+      "name": "Filter by Exchange",
+      "id": "0d514b30-42f0-47d6-be4f-b11720955d6b",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/quotes/?exchange={{exchange_uuid}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "quotes",
+            ""
+          ],
+          "query": [
+            {
+              "key": "exchange",
+              "value": "{{exchange_uuid}}"
+            }
+          ]
+        },
+        "description": "Filter quote requests by specific exchange."
+      },
+      "response": []
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "id": "01bed17e-f166-4b27-be4e-fcabdfca4720",
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "id": "1d941b85-2a4b-4f4b-a60c-6e68993ce206",
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "id": "eb3a4c98-43d6-4e4c-8b1d-ac986882c5de",
+      "key": "exchange_uuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "id": "75fca8b7-ad22-48cc-b6e7-b55dba34ea5f",
+      "key": "quote_uuid",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
