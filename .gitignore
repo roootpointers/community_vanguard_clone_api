@@ -158,3 +158,6 @@ staticfiles
 /network/migrations/
 /donation/migrations/
 /blog/migrations/
+
+# Firebase and other sensitive files
+notification/firebase_account_file/
