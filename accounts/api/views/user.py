@@ -25,13 +25,13 @@ class UserViewSet(viewsets.ModelViewSet):
     It allows users to create, retrieve, update, and delete user accounts.
     """
     serializer_class = UserSerializer
-    queryset = User.objects.select_related('profile').all()
+    queryset = User.objects.select_related('profile').prefetch_related('role_requests').all()
     permission_classes = [AllowAny]
     http_method_names = ["post", "get", "put", "patch", "delete"]
     lookup_field = 'uuid'
     pagination_class = UserPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['email']
+    filterset_fields = ['email', 'role_requests__role', 'role_requests__is_verified', 'is_active']
     search_fields = ['email', 'full_name', 'profile__branch', 'profile__rank', 'profile__location']
     ordering_fields = ['created_at', 'full_name', 'email']
     ordering = ['-created_at']
@@ -56,6 +56,9 @@ class UserViewSet(viewsets.ModelViewSet):
         - page_size: Items per page (default: 20, max: 100)
         - search: Search in email, full_name, branch, rank, location
         - email: Filter by exact email
+        - role_requests__role: Filter by role (customer, vendor, community_support_provider)
+        - role_requests__is_verified: Filter by verified role (true/false)
+        - is_active: Filter by active status (true/false)
         - ordering: Sort by created_at, full_name, email (prefix with - for descending)
         
         Returns paginated list of users with their profiles.
@@ -138,6 +141,9 @@ class UserViewSet(viewsets.ModelViewSet):
         - page: Page number (default: 1)
         - page_size: Items per page (default: 20, max: 100)
         - search: Search in email, full_name, branch, rank, location
+        - role_requests__role: Filter by role (customer, vendor, community_support_provider)
+        - role_requests__is_verified: Filter by verified role (true/false)
+        - is_active: Filter by active status (true/false)
         - ordering: Sort by created_at, full_name, email (prefix with - for descending)
         
         Returns paginated list of users that the current user is not following.

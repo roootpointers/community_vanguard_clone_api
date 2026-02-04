@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import FilterSet
 from django.db.models import Q
 import logging
 
@@ -12,6 +13,14 @@ from intel.models import Intel, IntelMedia
 from intel.api.serializers import IntelSerializer, IntelListSerializer
 
 logger = logging.getLogger(__name__)
+
+
+class IntelFilterSet(FilterSet):
+    """Custom FilterSet for Intel with flexible date filtering."""
+    
+    class Meta:
+        model = Intel
+        fields = ['urgency', 'status']
 
 
 class IntelPagination(PageNumberPagination):
@@ -34,20 +43,29 @@ class IntelViewSet(viewsets.ModelViewSet):
     parser_classes = [JSONParser]
     pagination_class = IntelPagination
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['urgency', 'status']
+    filterset_class = IntelFilterSet
     search_fields = ['description', 'location']
     ordering_fields = ['created_at', 'likes_count', 'comments_count']
     ordering = ['-created_at']
     
     def get_queryset(self):
-        """Filter queryset with manual handling for category UUID."""
+        """Filter queryset with manual handling for category UUID and date formats."""
         queryset = super().get_queryset()
         
         # Manual filtering for category UUID
         category = self.request.query_params.get('category')
-        
         if category:
             queryset = queryset.filter(category__uuid=category)
+        
+        # Handle simple date format (YYYY-MM-DD) for created_at
+        created_at = self.request.query_params.get('created_at')
+        if created_at:
+            queryset = queryset.filter(created_at__date=created_at)
+        
+        # Handle simple date format (YYYY-MM-DD) for updated_at
+        updated_at = self.request.query_params.get('updated_at')
+        if updated_at:
+            queryset = queryset.filter(updated_at__date=updated_at)
         
         return queryset
     
@@ -97,6 +115,18 @@ class IntelViewSet(viewsets.ModelViewSet):
         """
         List all intel posts with pagination and filtering.
         Only shows approved intel posts.
+        
+        Query parameters:
+        - page: Page number (default: 1)
+        - page_size: Items per page (default: 20, max: 100)
+        - search: Search in description, location
+        - urgency: Filter by urgency (low, medium, high)
+        - status: Filter by status (under_review, approved, rejected)
+        - created_at: Filter by creation date (YYYY-MM-DD format)
+        - updated_at: Filter by last updated date (YYYY-MM-DD format)
+        - ordering: Sort by created_at, likes_count, comments_count (prefix with - for descending)
+        
+        Returns paginated list of intel posts.
         """
         try:
             queryset = self.filter_queryset(self.get_queryset())
@@ -221,6 +251,18 @@ class IntelViewSet(viewsets.ModelViewSet):
     def my_intels(self, request):
         """
         Get all intel posts created by the authenticated user.
+        
+        Query parameters:
+        - page: Page number (default: 1)
+        - page_size: Items per page (default: 20, max: 100)
+        - search: Search in description, location
+        - urgency: Filter by urgency (low, medium, high)
+        - status: Filter by status (under_review, approved, rejected)
+        - created_at: Filter by creation date (YYYY-MM-DD format)
+        - updated_at: Filter by last updated date (YYYY-MM-DD format)
+        - ordering: Sort by created_at, likes_count, comments_count (prefix with - for descending)
+        
+        Returns paginated list of your intel posts.
         """
         try:
             queryset = Intel.objects.filter(
@@ -262,6 +304,18 @@ class IntelViewSet(viewsets.ModelViewSet):
     def user_intels(self, request, user_uuid=None):
         """
         Get all intel posts created by a specific user.
+        
+        Query parameters:
+        - page: Page number (default: 1)
+        - page_size: Items per page (default: 20, max: 100)
+        - search: Search in description, location
+        - urgency: Filter by urgency (low, medium, high)
+        - status: Filter by status (under_review, approved, rejected)
+        - created_at: Filter by creation date (YYYY-MM-DD format)
+        - updated_at: Filter by last updated date (YYYY-MM-DD format)
+        - ordering: Sort by created_at, likes_count, comments_count (prefix with - for descending)
+        
+        Returns paginated list of intel posts by the specified user.
         """
         try:
             from accounts.models.user import User

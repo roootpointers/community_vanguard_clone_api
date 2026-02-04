@@ -15,6 +15,7 @@ from .views.preferred_contribution_path import PreferredContributionPathListCrea
 from .views.affiliation import AffiliationListCreateAPIView, AffiliationDetailAPIView
 from .views.ban_user import BanUserViewSet
 from .views.admin_verification import AdminVerificationDocumentViewSet
+from .views.dashboard_stats import DashboardStatsAPIView
 from django.urls import path, include
 
 router = SimpleRouter()
@@ -64,4 +65,7 @@ urlpatterns = [
     path("api/accounts/ban/", BanUserViewSet.as_view({"post": "ban_user"}), name="ban_user"),
     path("api/accounts/unban/", BanUserViewSet.as_view({"post": "unban_user"}), name="unban_user"),
     path("api/accounts/banned-users/", BanUserViewSet.as_view({"get": "list_banned_users"}), name="list_banned_users"),
+    
+    # Dashboard Stats API (Admin only)
+    path("api/accounts/dashboard-stats/", DashboardStatsAPIView.as_view(), name="dashboard_stats"),
 ]

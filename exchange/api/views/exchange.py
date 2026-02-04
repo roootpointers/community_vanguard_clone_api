@@ -47,7 +47,7 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         """
         Filter queryset based on user permissions and query parameters.
         Admin/staff can see all exchanges. Regular users only see active exchanges.
-        Supports: seller_type, category, sub_category
+        Supports: seller_type, category, sub_category, created_at
         """
         queryset = super().get_queryset()
         
@@ -60,6 +60,7 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         category = self.request.query_params.get('category', None)
         sub_category = self.request.query_params.get('sub_category', None)
         status_param = self.request.query_params.get('status', None)
+        created_at = self.request.query_params.get('created_at', None)
         
         if seller_type:
             queryset = queryset.filter(seller_type=seller_type)
@@ -72,6 +73,10 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         
         if status_param:
             queryset = queryset.filter(status=status_param)
+        
+        # Handle simple date format (YYYY-MM-DD) for created_at
+        if created_at:
+            queryset = queryset.filter(created_at__date=created_at)
         
         return queryset
     
@@ -119,7 +124,8 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         Uses Django's Paginator for reliable pagination with proper edge case handling.
         
         Query params: 
-        - seller_type, category, sub_category, search: Filtering
+        - seller_type, category, sub_category, status, search: Filtering
+        - created_at: Filter by creation date (YYYY-MM-DD format)
         - page: Page number (default: 1, auto-corrects invalid values)
         - page_size: Items per category per page (default: 10, max: 100)
         
@@ -263,6 +269,7 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         Query params:
         - page: Page number (default: 1, auto-corrects invalid values)
         - page_size: Items per page (default: 10, max: 100)
+        - created_at: Filter by creation date (YYYY-MM-DD format)
         - All standard filters: seller_type, category, sub_category, status, search
         """
         try:
@@ -307,6 +314,7 @@ class ExchangeViewSet(viewsets.ModelViewSet):
         Query params:
         - page: Page number (default: 1, auto-corrects invalid values)
         - page_size: Items per page (default: 10, max: 100)
+        - created_at: Filter by creation date (YYYY-MM-DD format)
         - All standard filters: seller_type, category, sub_category, status, search
         
         Returns only approved exchanges to protect user privacy.

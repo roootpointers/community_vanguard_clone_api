@@ -159,3 +159,55 @@ class UserRoleViewSet(viewsets.ModelViewSet):
             }
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
     
+    @action(detail=False, methods=['put', 'patch'], url_path='(?P<role_uuid>[^/.]+)/update', permission_classes=[IsAdminUser])
+    def update_role_by_uuid(self, request, role_uuid=None, *args, **kwargs):
+        """
+        Admin endpoint to update any user's role by UUID.
+        Only accessible by admin users.
+        """
+        try:
+            try:
+                user_role = UserRole.objects.select_related('user').get(uuid=role_uuid)
+            except UserRole.DoesNotExist:
+                error = {
+                    "success": False,
+                    "message": "Role not found with the provided UUID.",
+                }
+                return Response(error, status=status.HTTP_404_NOT_FOUND)
+            
+            partial = request.method == 'PATCH'
+            serializer = self.get_serializer(user_role, data=request.data, partial=partial)
+            
+            try:
+                serializer.is_valid(raise_exception=True)
+            except Exception as e:
+                error = {
+                    "success": False,
+                    "message": "Validation failed",
+                    "errors": e.args[0] if e.args else str(e)
+                }
+                return Response(error, status=status.HTTP_400_BAD_REQUEST)
+            
+            serializer.save()
+            
+            # Update user flags if needed
+            user_role.user.is_role = True
+            user_role.user.save(update_fields=['is_role'])
+            
+            user = user_role.user
+            user_serializer = UserSerializer(user)
+            response = {
+                "success": True,
+                "message": f"Role updated successfully for user {user.email}",
+                "data": user_serializer.data
+            }
+            return Response(response, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            error = {
+                "success": False,
+                "message": "Failed to update role",
+                "errors": str(e)
+            }
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+    
